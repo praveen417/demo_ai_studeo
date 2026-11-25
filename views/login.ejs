@@ -1,0 +1,7 @@
+<%- include('partials/header', { title: 'Sign in' }) %>
+<div class="login"><div class="panel"><h1>MBOP Backup Reports</h1><div class="sub">MTN Backup Operations Portal</div>
+<form method="post"><%- csrfInput() %>
+<label>Username</label><input name="username" autocomplete="username" autofocus required>
+<label>Password</label><input name="password" type="password" autocomplete="current-password" required>
+<button type="submit" style="width:100%">Sign in</button></form></div></div>
+<%- include('partials/footer') %>

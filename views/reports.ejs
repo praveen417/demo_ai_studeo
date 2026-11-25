@@ -1,0 +1,8 @@
+<%- include('partials/header', { title: 'Reports' }) %>
+<h1>Received Reports</h1><div class="sub">One report per primary server and day; a later report for the same day replaces the earlier one.</div>
+<div class="tbl"><table><tr><th>Report date</th><th>Primary server</th><th class="num">Jobs</th><th>Received</th><th>Source</th><th></th></tr>
+<% if (rows.length) { for (const r of rows) { %><tr><td><a href="/?master=<%= encodeURIComponent(r.master) %>&date=<%= encodeURIComponent(r.report_date) %>"><%= r.report_date %></a></td><td><%= r.master %></td><td class="num"><%= r.row_count %></td><td><%= r.ingested_at %></td><td><%= r.source %></td>
+<td><a class="btn sec sm" href="/reports/<%= r.id %>/csv">CSV</a>
+<% if (can('delete_report')) { %><form method="post" action="/reports/<%= r.id %>/delete" style="display:inline" data-confirm="Delete this report?"><%- csrfInput() %><button class="sm sec">Delete</button></form><% } %></td></tr>
+<% } } else { %><tr><td colspan="6">No reports received yet.</td></tr><% } %></table></div>
+<%- include('partials/footer') %>

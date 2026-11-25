@@ -1,0 +1,15 @@
+<%- include('partials/header', { title: 'Users' }) %>
+<h1>User Administration</h1>
+<div class="panel" style="margin-bottom:16px"><form method="post" class="bar-filters" style="margin:0"><%- csrfInput() %><input type="hidden" name="action" value="create">
+<div><label>Username</label><input name="username" required></div><div><label>Full name</label><input name="full_name"></div>
+<div><label>E-mail</label><input name="email" type="email"></div>
+<div><label>Role</label><select name="role"><% for (const r of roles) { %><option><%= r %></option><% } %></select></div>
+<div><label>Initial password (min 10)</label><input name="password" type="password" minlength="10" required></div><button>Create user</button></form></div>
+<div class="tbl"><table><tr><th>Username</th><th>Name</th><th>E-mail</th><th>Role</th><th>Status</th><th>Last login</th><th>Actions</th></tr>
+<% for (const u of rows) { %><tr><td><%= u.username %></td><td><%= u.full_name %></td>
+<td><form method="post" class="inline" style="margin:0"><%- csrfInput() %><input type="hidden" name="action" value="email"><input type="hidden" name="id" value="<%= u.id %>"><input name="email" type="email" value="<%= u.email %>" style="width:170px"><button class="sm sec">Save</button></form></td>
+<td><form method="post" class="inline" style="margin:0"><%- csrfInput() %><input type="hidden" name="action" value="role"><input type="hidden" name="id" value="<%= u.id %>"><select name="role"><% for (const r of roles) { %><option <%= r === u.role ? 'selected' : '' %>><%= r %></option><% } %></select><button class="sm sec">Set</button></form></td>
+<td><%= u.active ? 'Active' : 'Disabled' %><% if (u.locked_until && u.locked_until > now) { %> (locked)<% } %></td><td><%= u.last_login || '-' %></td>
+<td><form method="post" style="display:inline"><%- csrfInput() %><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<%= u.id %>"><button class="sm sec"><%= u.active ? 'Disable' : 'Enable' %></button></form>
+<form method="post" class="inline" style="display:inline-flex"><%- csrfInput() %><input type="hidden" name="action" value="password"><input type="hidden" name="id" value="<%= u.id %>"><input name="password" type="password" placeholder="New password" minlength="10" style="width:130px"><button class="sm sec">Reset</button></form></td></tr><% } %></table></div>
+<%- include('partials/footer') %>

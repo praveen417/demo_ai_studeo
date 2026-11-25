@@ -1,0 +1,25 @@
+<%- include('partials/header', { title: 'Backup Jobs' }) %>
+<h1>Backup Jobs</h1>
+<% if (!rep) { %><div class="panel">No report for the selected date.</div>
+<form method="get" class="bar-filters">
+  <% if (masters.length > 1) { %><div><label>Primary server</label><select name="master"><% for (const m of masters) { %><option <%= m === master ? 'selected' : '' %>><%= m %></option><% } %></select></div>
+  <% } else { %><input type="hidden" name="master" value="<%= master %>"><% } %>
+  <div><label>Report date</label><input type="date" name="date" value=""></div>
+  <button type="submit">Show</button>
+</form>
+<% } else { %>
+<div class="sub"><%= rep.master %> &middot; <%= rep.report_date %> &middot; <%= total %> job(s)</div>
+<form method="get" class="bar-filters"><input type="hidden" name="master" value="<%= master %>">
+<div><label>Date</label><input type="date" name="date" value="<%= rep.report_date %>"></div>
+<div><label>Search</label><input name="q" value="<%= args.q || '' %>" placeholder="server, policy, job ID"></div>
+<div><label>Status</label><select name="status"><option value="">All</option><% for (const v of opts.statuses) { %><option <%= args.status === v ? 'selected' : '' %>><%= v %></option><% } %></select></div>
+<div><label>Media server</label><select name="media"><option value="">All</option><% for (const v of opts.medias) { %><option <%= args.media === v ? 'selected' : '' %>><%= v %></option><% } %></select></div>
+<div><label>Schedule type</label><select name="schedule"><option value="">All</option><% for (const v of opts.schedules) { %><option <%= args.schedule === v ? 'selected' : '' %>><%= v %></option><% } %></select></div>
+<button type="submit">Filter</button>
+<a class="btn sec" href="/jobs?<%= qs({ ...qargs, format: 'csv' }) %>">Export CSV</a></form>
+<div class="tbl"><table><tr><th>#</th><th>Server Name</th><th>Policy Name</th><th>Schedule Type</th><th>Start Time</th><th>End Time</th><th>Elapsed</th><th>Master</th><th>Media Server</th><th class="num">Backup Size</th><th class="num">Backup Speed</th><th>Status</th><th>Code</th><th>Job ID</th></tr>
+<% if (rows.length) { rows.forEach((j, idx) => { %><tr><td><%= idx + 1 + (page - 1) * 100 %></td><td><%= j.client %></td><td><%= j.policy %></td><td><%= j.schedule_type %></td><td><%= j.start_time %></td><td><%= j.end_time %></td><td><%= j.elapsed_txt %></td><td><%= j.master %></td><td><%= j.media %></td><td class="num"><%= j.size_txt %></td><td class="num"><%= j.speed_txt %></td><td><%- badge(j.status) %></td><td><%= j.status_code %></td><td><%= j.job_id %></td></tr>
+<% }); } else { %><tr><td colspan="14">No jobs match the filter.</td></tr><% } %></table></div>
+<div class="pager"><% if (page > 1) { %><a href="/jobs?<%= qs({ ...qargs, page: String(page - 1) }) %>">&larr; Prev</a><% } %><span>Page <%= page %> of <%= pages %></span><% if (page < pages) { %><a href="/jobs?<%= qs({ ...qargs, page: String(page + 1) }) %>">Next &rarr;</a><% } %></div>
+<% } %>
+<%- include('partials/footer') %>

@@ -1,0 +1,28 @@
+</div>
+<% if (user) { %><aside class="side noprint"><nav>
+<% if (user.role !== 'Requester') { %>
+<div class="grp">Monitoring</div>
+<a href="/" class="<%= endpoint === 'dashboard' ? 'on' : '' %>">Dashboard</a>
+<a href="/jobs" class="<%= endpoint === 'jobs' ? 'on' : '' %>">Backup Jobs</a>
+<a href="/failures" class="<%= endpoint === 'failures' ? 'on' : '' %>">Failures</a>
+<div class="grp">Reports</div>
+<a href="/weekly" class="<%= (endpoint === 'weekly_report' || endpoint === 'monthly_report') ? 'on' : '' %>">Weekly / Monthly Report</a>
+<a href="/reports" class="<%= endpoint === 'reports' ? 'on' : '' %>">Received Reports</a>
+<% if (can('mail_send')) { %><a href="/mail" class="<%= endpoint === 'mail_page' ? 'on' : '' %>">E-mail Reports</a><% } %>
+<div class="grp">Storage &amp; Policies</div>
+<a href="/storage/pools" class="<%= (endpoint === 'storage_pools' || endpoint === 'storage_pool_detail') ? 'on' : '' %>">Storage Pools</a>
+<a href="/storage/utilization" class="<%= endpoint === 'storage_utilization' ? 'on' : '' %>">Storage Utilization</a>
+<a href="/tapes" class="<%= (endpoint === 'tape_page' || endpoint === 'tape_report') ? 'on' : '' %>">Tape Media</a>
+<a href="/policies" class="<%= (endpoint === 'policies_page' || endpoint === 'policy_detail' || endpoint === 'policies_import_file') ? 'on' : '' %>">Policies</a>
+<% } %>
+<div class="grp">Requests</div>
+<a href="/requests" class="<%= ['requests_page','request_new','request_edit','request_view','requests_import'].includes(endpoint) ? 'on' : '' %>">Backup Requests</a>
+<a href="/approvals" class="<%= endpoint === 'approvals_page' ? 'on' : '' %>">Approvals</a>
+<% if (user.role !== 'Requester' && (can('upload') || can('audit') || can('users'))) { %><div class="grp">Administration</div>
+<% if (can('upload')) { %><a href="/upload" class="<%= endpoint === 'upload' ? 'on' : '' %>">Upload</a><% } %>
+<% if (can('audit')) { %><a href="/audit" class="<%= endpoint === 'audit_log' ? 'on' : '' %>">Audit Log</a><% } %>
+<% if (can('users')) { %><a href="/admin/users" class="<%= endpoint === 'users' ? 'on' : '' %>">Users</a><% } %><% } %>
+</nav></aside><% } %>
+</div>
+<% if (user) { %><div class="menu-overlay noprint" data-menu-close></div><% } %>
+<script src="/static/app.js"></script></body></html>

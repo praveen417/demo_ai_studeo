@@ -1,0 +1,5 @@
+<%- include('partials/header', { title: 'Account' }) %>
+<h1>My Account</h1><div class="sub"><%= user.username %> &middot; <%= user.role %></div>
+<div class="panel" style="max-width:420px"><form method="post"><%- csrfInput() %><p><label>Current password</label><br><input type="password" name="current" required></p>
+<p><label>New password (min 10 characters)</label><br><input type="password" name="new" minlength="10" required></p><button>Change password</button></form></div>
+<%- include('partials/footer') %>

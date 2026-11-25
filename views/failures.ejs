@@ -1,0 +1,12 @@
+<%- include('partials/header', { title: 'Failures' }) %>
+<h1>Failures &amp; Follow-up</h1>
+<div class="sub">Failed, partially successful and incomplete jobs for the last <%= days %> day(s), with engineer remarks.</div>
+<form method="get" class="bar-filters"><div><label>Days</label><select name="days"><% for (const d of [1,3,7,14,30,90]) { %><option <%= d === days ? 'selected' : '' %>><%= d %></option><% } %></select></div><button type="submit">Show</button><% if (can('mail_send')) { %> <a class="btn sec" href="/mail?type=daily_failures">E-mail failure report (daily / weekly / monthly)</a><% } %></form>
+<div class="tbl"><table><tr><th>Date</th><th>Server</th><th>Policy</th><th>Schedule</th><th>Media</th><th>Status</th><th>Code</th><th>Job ID</th><th>Follow-up</th></tr>
+<% if (rows.length) { for (const j of rows) { const key = `${j.rmaster}|${j.report_date}|${j.job_id}`; const rems = remarks.get(key) || []; %><tr>
+<td><%= j.report_date %></td><td><%= j.client %></td><td><%= j.policy %></td><td><%= j.schedule_type %></td><td><%= j.media %></td><td><%- badge(j.status) %></td><td><%= j.status_code %></td><td><%= j.job_id %></td>
+<td class="wrapcell"><% for (const r of rems) { %><div class="remark <%= r.status %>"><b><%= r.created_by %></b> <%= r.created_at %><% if (r.source === 'email') { %> <i>(via e-mail)</i><% } %>: <%= r.text %>
+<% if (r.status === 'Open' && can('resolve')) { %><form method="post" action="/remarks/<%= r.id %>/resolve" style="display:inline"><%- csrfInput() %><button class="sm sec">Resolve</button></form><% } else if (r.status === 'Resolved') { %>(resolved by <%= r.resolved_by %>)<% } %></div><% } %>
+<% if (can('remark')) { %><form method="post" action="/remarks" class="inline"><%- csrfInput() %><input type="hidden" name="master" value="<%= j.rmaster %>"><input type="hidden" name="date" value="<%= j.report_date %>"><input type="hidden" name="job_id" value="<%= j.job_id %>"><input type="hidden" name="client" value="<%= j.client %>"><input type="hidden" name="policy" value="<%= j.policy %>"><input name="text" placeholder="Add remark / action taken" minlength="3" maxlength="1000" required><button class="sm">Add</button></form><% } %></td></tr>
+<% } } else { %><tr><td colspan="9">No failed, partial or incomplete jobs in this period.</td></tr><% } %></table></div>
+<%- include('partials/footer') %>

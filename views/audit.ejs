@@ -1,0 +1,5 @@
+<%- include('partials/header', { title: 'Audit Log' }) %>
+<h1>Audit Log</h1><div class="sub">Most recent 500 events.</div>
+<div class="tbl"><table><tr><th>Time</th><th>User</th><th>Action</th><th>Detail</th><th>IP</th></tr>
+<% for (const r of rows) { %><tr><td><%= r.ts %></td><td><%= r.username || '-' %></td><td><%= r.action %></td><td class="wrapcell"><%= r.detail %></td><td><%= r.ip || '' %></td></tr><% } %></table></div>
+<%- include('partials/footer') %>

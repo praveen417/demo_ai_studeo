@@ -1,0 +1,5 @@
+{
+  "name": "MBOP Backup Reports",
+  "description": "MTN Backup Operations Portal - NetBackup daily reports, failure follow-up, storage capacity, and user administration.",
+  "requestFramePermissions": []
+}

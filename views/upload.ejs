@@ -1,0 +1,13 @@
+<%- include('partials/header', { title: 'Upload' }) %>
+<h1>Upload Report CSV</h1><div class="sub">Manual import of <code>NetBackup_Daily_Report_YYYYMMDD.csv</code> (normally the report script pushes it automatically).</div>
+<div class="panel" style="max-width:520px"><form method="post" enctype="multipart/form-data"><%- csrfInput() %>
+<p><label>Report date</label><br><input type="date" name="date" required></p>
+<p><label>Primary server (only used if the CSV has no master column values)</label><br><input name="master" maxlength="100"></p>
+<p><input type="file" name="file" accept=".csv,text/csv" required></p><button type="submit">Import</button></form></div>
+<h1 style="margin-top:28px">Import Storage Snapshot</h1><div class="sub">Paste the output of <code>nbdevquery -listdp -stype AdvancedDisk -U</code> (normally pushed automatically by the report script).</div>
+<div class="panel" style="max-width:720px"><form method="post" action="/upload/storage"><%- csrfInput() %>
+<p><label>Snapshot date</label><br><input type="date" name="date" required></p>
+<p><label>Primary server</label><br><input name="master" maxlength="100" required></p>
+<p><textarea name="text" rows="10" style="width:100%" required></textarea></p><button type="submit">Import snapshot</button>
+<% if (can('users')) { %> &nbsp; <a href="/storage/raw">View received raw output</a><% } %></form></div>
+<%- include('partials/footer') %>

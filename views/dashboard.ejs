@@ -1,0 +1,70 @@
+<%- include('partials/header', { title: 'Dashboard' }) %>
+<h1>Executive Backup Dashboard</h1>
+<% if (!rep) { %>
+<div class="panel">No reports have been received yet. The NetBackup report script pushes its CSV to <code>/api/v1/reports</code> after each run<% if (can('upload')) { %>, or you can <a href="/upload">upload a CSV</a> manually<% } %>.</div>
+<% } else { %>
+<div class="sub">Primary server <b><%= rep.master %></b> &middot; reporting date <b><%= rep.report_date %></b> &middot; received <%= rep.ingested_at %> (<%= rep.source %>)</div>
+<% if (stale) { %><div class="banner warn"><%= stale %></div><% } %>
+<form method="get" class="bar-filters">
+  <% if (masters.length > 1) { %><div><label>Primary server</label><select name="master"><% for (const m of masters) { %><option <%= m === master ? 'selected' : '' %>><%= m %></option><% } %></select></div>
+  <% } else { %><input type="hidden" name="master" value="<%= master %>"><% } %>
+  <div><label>Report date</label><input type="date" name="date" value="<%= rep ? rep.report_date : '' %>"></div>
+  <button type="submit">Show</button>
+</form>
+<% if (can('mail_send')) { %><p class="noprint"><a class="btn sec" href="/mail?type=daily&master=<%= encodeURIComponent(rep.master) %>&period=<%= encodeURIComponent(rep.report_date) %>">E-mail this report</a></p><% } %>
+<div class="cards">
+<div class="card"><div class="lbl">Total Jobs</div><div class="val"><%= s.total %></div></div>
+<div class="card ok"><div class="lbl">Successful</div><div class="val"><%= s.successful %></div></div>
+<div class="card warn"><div class="lbl">Partially Successful</div><div class="val"><%= s.partial %></div></div>
+<div class="card fail"><div class="lbl">Failed</div><div class="val"><%= s.failed %></div></div>
+<div class="card inc"><div class="lbl">Incomplete / Queued</div><div class="val"><%= s.incomplete %></div></div>
+<div class="card run"><div class="lbl">Running</div><div class="val"><%= s.running %></div></div>
+<div class="card"><div class="lbl">Total Backup Data</div><div class="val"><%= s.total_data %></div></div>
+<div class="card"><div class="lbl">Average Speed</div><div class="val"><%= s.avg_speed %></div></div>
+<div class="card <%= s.success_pct === 100 ? 'ok' : (s.success_pct !== null && s.success_pct >= 95 ? 'warn' : (s.success_pct !== null ? 'fail' : '')) %>"><div class="lbl">Success Rate</div><div class="val"><%= s.success_pct !== null ? s.success_pct.toFixed(1) + '%' : 'N/A' %></div></div>
+</div>
+<% if (s.total) { %>
+<div class="stack"><% for (const [n, c, v] of [['Successful','var(--ok)',s.successful],['Partial','var(--warn)',s.partial],['Failed','var(--fail)',s.failed],['Incomplete/Queued','var(--inc)',s.incomplete],['Running','var(--run)',s.running]]) { %><% if (v) { %><div style="width:<%= 100 * v / s.total %>%;background:<%= c %>" title="<%= n %>: <%= v %>"></div><% } %><% } %></div>
+<div class="legend"><span><i class="dot" style="background:var(--ok)"></i>Successful <%= s.successful %></span><span><i class="dot" style="background:var(--warn)"></i>Partial <%= s.partial %></span><span><i class="dot" style="background:var(--fail)"></i>Failed <%= s.failed %></span><span><i class="dot" style="background:var(--inc)"></i>Incomplete/Queued <%= s.incomplete %></span><span><i class="dot" style="background:var(--run)"></i>Running <%= s.running %></span></div>
+<% } else { %><div class="panel">No backup jobs were found for this reporting date.</div><% } %>
+
+<h2>Backup outcome charts &middot; <%= rep.report_date %></h2>
+<div class="chart-row">
+<div class="panel chart-card"><div class="chart-title">Successful vs failed jobs</div>
+<div class="donut-wrap"><%- donut %><ul class="donut-legend">
+<li><i class="dot" style="background:#2e7d32"></i>Successful <b><%= s.successful %></b></li><li><i class="dot" style="background:#ed8b00"></i>Partially successful <b><%= s.partial %></b></li>
+<li><i class="dot" style="background:#c62828"></i>Failed <b><%= s.failed %></b></li><li><i class="dot" style="background:#757575"></i>Incomplete / queued <b><%= s.incomplete %></b></li>
+<li><i class="dot" style="background:#1976d2"></i>Running <b><%= s.running %></b></li></ul></div></div>
+<div class="panel chart-card" style="flex:2 1 460px"><div class="chart-title">Job outcomes by media server</div><% if (media_chart) { %><%- media_chart %><div class="legend"><span><i class="dot" style="background:#2e7d32"></i>Successful</span><span><i class="dot" style="background:#ed8b00"></i>Partial</span><span><i class="dot" style="background:#c62828"></i>Failed</span><span><i class="dot" style="background:#757575"></i>Other</span></div><% } else { %><div class="sub">No jobs for this date.</div><% } %></div>
+</div>
+<% if (rate_chart) { %><div class="panel chart-card"><div class="chart-title">Daily success rate &middot; last <%= range_days %> days</div><%- rate_chart %></div><% } %>
+
+<h2>Last <%= range_days %> days</h2>
+<div class="tabs noprint"><% for (const n of [7,14,30,60,90]) { %><a href="/?master=<%= encodeURIComponent(master) %>&date=<%= encodeURIComponent(rep.report_date) %>&range=<%= n %>" class="<%= n === range_days ? 'on' : '' %>"><%= n %> days</a><% } %></div>
+<div class="cards">
+<div class="card"><div class="lbl">Jobs (<%= range_days %> d)</div><div class="val"><%= range_k.total %></div></div>
+<div class="card ok"><div class="lbl">Success rate</div><div class="val"><%= range_k.success_pct !== null ? range_k.success_pct.toFixed(2) + '%' : 'N/A' %></div></div>
+<div class="card warn"><div class="lbl">Partial</div><div class="val"><%= range_k.partial %></div></div>
+<div class="card fail"><div class="lbl">Failed</div><div class="val"><%= range_k.failed %></div></div>
+<div class="card"><div class="lbl">Backup data</div><div class="val"><%= fmtSize(range_k.kb) %></div></div>
+<div class="card"><div class="lbl">Reports received</div><div class="val"><%= range_k.days_reported %> / <%= range_days %></div></div></div>
+<div class="panel"><%- trend %></div>
+
+<h2>Storage capacity by media server</h2>
+<% if (cap_rows.length) { %><div class="panel chart-card"><%- cap_chart %><div class="legend"><span><i class="dot" style="background:#2e7d32"></i>Used (below <%= Math.trunc(warn) %>%)</span><span><i class="dot" style="background:#ed8b00"></i>Used (warning &ge; <%= Math.trunc(warn) %>%)</span><span><i class="dot" style="background:#c62828"></i>Used (critical &ge; <%= Math.trunc(crit) %>%)</span><span><i class="dot" style="background:#d9dee5"></i>Free</span></div>
+<div class="note">Disk pool capacity from the latest snapshot of each pool (newest <%= cap_date %>), summed per media server. <a href="/storage/pools">Storage pools</a> &middot; <a href="/storage/utilization?master=<%= encodeURIComponent(master) %>">utilisation trend &amp; projection</a> &middot; <a href="/weekly">trend and days-to-full in the reports</a>.</div></div>
+<% } else { %><div class="panel">No storage snapshots received yet for this primary server. Enable <code>STORAGE_REPORT=yes</code> in the report script or import a snapshot on the Upload page.</div><% } %>
+
+<h2>By media server</h2>
+<div class="tbl"><table><tr><th>Media server</th><th class="num">Jobs</th><th class="num">Not successful</th><th class="num">Data</th><th class="num">Avg speed</th></tr>
+<% for (const m of media) { %><tr><td><%= m.media %></td><td class="num"><%= m.jobs %></td><td class="num"><%= m.problems %></td><td class="num"><%= fmtSize(m.kb) %></td>
+<td class="num"><%= m.ssec ? (m.skb / m.ssec / 1024).toFixed(2) + ' MB/sec' : 'N/A' %></td></tr><% } %></table></div>
+
+<h2>Jobs needing attention</h2>
+<% if (problems.length) { %><div class="tbl"><table><tr><th>Server</th><th>Policy</th><th>Schedule</th><th>Start</th><th>Media server</th><th>Status</th><th>Code</th><th>Job ID</th></tr>
+<% for (const j of problems) { %><tr><td><%= j.client %></td><td><%= j.policy %></td><td><%= j.schedule_type %></td><td><%= j.start_time %></td><td><%= j.media %></td><td><%- badge(j.status) %></td><td><%= j.status_code %></td><td><%= j.job_id %></td></tr><% } %></table></div>
+<p><a href="/failures">All failures and follow-up &rarr;</a></p>
+<% } else { %><div class="panel">No failed or partial jobs for this date.</div><% } %>
+<div class="note">Backup Size is the data written by the job as reported by NetBackup (not logical source size nor physical deduplicated storage). Success rate = Successful / finished jobs (running excluded).</div>
+<% } %>
+<%- include('partials/footer') %>

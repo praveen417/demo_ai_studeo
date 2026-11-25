@@ -1,0 +1,18 @@
+services:
+  mbop:
+    build: .
+    image: mbop-backup-portal:1.0
+    container_name: mbop-backup-portal
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8080:8000"          # put an HTTPS reverse proxy in front (see README)
+    volumes:
+      - mbop_data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  mbop_data:
